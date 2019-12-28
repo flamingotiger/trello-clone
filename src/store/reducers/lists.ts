@@ -11,6 +11,7 @@ export const createLists = (title: string, boardId: string) => {
 }
 
 export const updateListsTitle = (id: string, title: string) => action(UPDATE_LISTS_TITLE, { id, title });
+
 const actions = {
     createLists,
     updateListsTitle
@@ -22,7 +23,6 @@ export interface ListsType {
     id: string;
     boardId: string;
     title: string;
-    cards: any;
 }
 
 export interface ListsState {
@@ -38,7 +38,7 @@ const initialState: ListsState = {
 export default createReducer<ListsState, ListsActions>(initialState, {
     [CREATE_LISTS]: (state, action) =>
         produce(state, draft => {
-            draft.lists = [...state.lists, { id: action.payload.id, boardId: action.payload.boardId, title: action.payload.title, cards: [] }];
+            draft.lists = [...state.lists, { id: action.payload.id, boardId: action.payload.boardId, title: action.payload.title }];
         }),
     [UPDATE_LISTS_TITLE]: (state, action) =>
         produce(state, draft => {

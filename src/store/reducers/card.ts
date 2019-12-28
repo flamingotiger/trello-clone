@@ -3,36 +3,50 @@ import { action, ActionType, createReducer } from 'typesafe-actions';
 import uuid from 'uuid';
 
 export const CREATE_CARD = "CREATE_CARD";
+export const UPDATE_CARD = "UPDATE_CARD";
 
-export const createLists = (title: string) => {
+export const createCard = (listsId: string, cardName: string) => {
     const id: string = uuid.v4();
-    return action(CREATE_CARD, { id, title });
+    return action(CREATE_CARD, { id, cardName, listsId })
 }
 
+export const updateCard = (cardId: string, cardName: string) => action(UPDATE_CARD, { cardId, cardName });
+
 const actions = {
-    createLists
+    createCard,
+    updateCard
 };
 
 export { actions };
 
 export interface CardType {
     id: string;
-    title: string;
+    cardName: string;
+    listsId: string;
 }
 
-export interface CardState {
-    lists: CardType[];
+export interface ListsState {
+    cards: CardType[];
 }
 
-export type CardActions = ActionType<typeof actions>;
+export type ListsActions = ActionType<typeof actions>;
 
-const initialState: CardState = {
-    lists: []
+const initialState: ListsState = {
+    cards: []
 };
 
-export default createReducer<CardState, CardActions>(initialState, {
+export default createReducer<ListsState, ListsActions>(initialState, {
     [CREATE_CARD]: (state, action) =>
         produce(state, draft => {
-            draft.lists = [...state.lists, { id: action.payload.id, title: action.payload.title }];
+            draft.cards = [...state.cards, { id: action.payload.id, listsId: action.payload.listsId, cardName: action.payload.cardName }];
+        }),
+    [UPDATE_CARD]: (state, action) =>
+        produce(state, draft => {
+            draft.cards = state.cards.map((card: CardType) => {
+                if (card.id === action.payload.cardId) {
+                    card = { ...card, cardName: action.payload.cardName };
+                }
+                return card;
+            });
         })
 });

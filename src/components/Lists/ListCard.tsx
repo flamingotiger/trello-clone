@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useRef } from "react";
 import styled from "styled-components";
+import { useDispatch } from 'react-redux';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
+import { CardType, updateCard } from "store/reducers/card";
 
 const ListCardStyle = styled.li`
     list-style: none;
@@ -61,12 +63,25 @@ const ListCardInput = styled.input`
   outline: none;
 `
 
-const ListCard: React.FC = () => {
+const ListCard: React.FC<{ card: CardType }> = ({ card }) => {
+  const inputEl = useRef<HTMLInputElement>(null);
+  const dispatch = useDispatch();
   return (
     <ListCardStyle>
       <ListCardContent>
-        <ListCardInput value="리스트" disabled />
-        <Icon>
+        <ListCardInput ref={inputEl} defaultValue={card.cardName}
+          onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+            const value = e.currentTarget.value;
+            if (e.keyCode === 13 && value) {
+              dispatch(updateCard(card.id, e.currentTarget.value))
+              e.currentTarget.blur();
+            }
+          }} />
+        <Icon onClick={() => {
+          if (inputEl && inputEl.current) {
+            inputEl.current.focus();
+          }
+        }}>
           <FontAwesomeIcon icon={faPen} size="sm" color="rgba(0,0,0,0.5)" />
         </Icon>
       </ListCardContent>
