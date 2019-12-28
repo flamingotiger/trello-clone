@@ -1,6 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 import Lists from 'components/Lists/Lists';
+import CreateLists from 'components/Lists/CreateLists';
+import { useSelector } from 'react-redux';
+import { RootState } from 'store/reducers';
+import { ListsType } from 'store/reducers/lists';
 
 const BoardStyle = styled.section`
     height: 100%;
@@ -24,9 +28,11 @@ const BoardListWrapper = styled.div`
 `
 
 const Board = () => {
+    const listsState = useSelector((state:RootState) => state.lists);
     return (<BoardStyle>
         <BoardListWrapper>
-            {[0, 1, 2, 3, 4, 5, 6].map((list, i) => <Lists key={i} />)}
+            {listsState.lists.map((list:ListsType) => <Lists key={list.id} list={list}/>)}
+            <CreateLists />
         </BoardListWrapper>
     </BoardStyle>)
 }

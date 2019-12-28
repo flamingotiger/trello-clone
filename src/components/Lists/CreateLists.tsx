@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useDispatch } from 'react-redux';
-import ListCard from './ListCard';
-import { ListsType, updateListsTitle } from 'store/reducers/lists';
+import { createLists } from 'store/reducers/lists';
+import { useParams } from 'react-router-dom';
 
 const ListsWrapper = styled.div`
     width: 272px;
@@ -15,7 +15,7 @@ const ListsWrapper = styled.div`
 `
 
 const ListsContent = styled.div`
-    background-color: #ebecf0;
+    background-color: rgba(0,0,0,0.3);
     border-radius: 3px;
     box-sizing: border-box;
     display: flex;
@@ -23,16 +23,14 @@ const ListsContent = styled.div`
     max-height: 100%;
     position: relative;
     white-space: normal;
-`
-
-const ListsStyle = styled.ul`
-   list-style: none;
-   margin: 0;
-   padding: 0;
+    &:hover {
+        background-color: rgba(0,0,0,0.2);
+    }
 `
 
 const ListHeader = styled.input`
     background-color: rgba(255,255,255,0);
+    color: #fff;
     border: 0 none;
     user-select: none;
     font-size: 14px;
@@ -40,25 +38,30 @@ const ListHeader = styled.input`
     height: 40px;
     padding-left: 10px;
     font-weight: bold;
+    &::placeholder{
+        color: #fff;
+    }
 `
 
-const Lists: React.FC<{ list: ListsType }> = ({ list }) => {
+const CreateLists: React.FC = () => {
+    const { id: boardId } = useParams();
     const dispatch = useDispatch();
     return <ListsWrapper>
         <ListsContent>
-            <ListHeader type="text" defaultValue={list.title}
+            <ListHeader
+                type="text"
+                placeholder="Create lists"
                 onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     const value = e.currentTarget.value;
                     if (e.keyCode === 13 && value) {
-                        dispatch(updateListsTitle(list.id, e.currentTarget.value))
-                        e.currentTarget.blur();
+                        if (boardId) {
+                            dispatch(createLists(e.currentTarget.value, boardId))
+                            e.currentTarget.value = '';
+                        }
                     }
                 }} />
-            <ListsStyle>
-                {list.cards.map((card: any, i: number) => <ListCard key={i} />)}
-            </ListsStyle>
         </ListsContent>
     </ListsWrapper>
 }
 
-export default Lists;
+export default CreateLists;
