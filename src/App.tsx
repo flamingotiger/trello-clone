@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, useHistory, useLocation } from 'react-router-dom';
 import Home from 'pages/Home';
 import Board from 'pages/Board';
 import NotFound from 'pages/NotFound';
@@ -13,11 +13,15 @@ const AppStyle = styled.div`
 `
 
 const App: React.FC = () => {
+  const [location, history] = [useLocation(), useHistory()];
+  if (location.pathname === '/') {
+    history.replace('/trello-clone');
+  }
   return (
     <AppStyle>
       <Header />
       <Switch>
-        <Route exact path="/" component={Home} />
+        <Route exact path="/trello-clone" component={Home} />
         <Route exact path="/board/:id" component={Board} />
         <Route component={NotFound} />
       </Switch>
