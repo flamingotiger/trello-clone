@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import Lists from 'components/Lists/Lists';
 import CreateLists from 'components/Lists/CreateLists';
@@ -6,13 +6,13 @@ import { useSelector } from 'react-redux';
 import { RootState } from 'store/reducers';
 import { ListsType } from 'store/reducers/lists';
 
-const BoardStyle = styled.section`
+const ListStyle = styled.section`
     height: 100%;
-    overflow-y: auto;
+    overflow-y: hidden;
     position: relative;
 `
 
-const BoardListWrapper = styled.div`
+const ListWrapper = styled.div`
     white-space: nowrap;
     user-select: none;
     position: relative;
@@ -20,25 +20,25 @@ const BoardListWrapper = styled.div`
     overflow-x: auto;
     overflow-y: hidden;
     padding-bottom: 8px;
-    position: absolute;
+    height: 100%;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
 `
 
-const Board = () => {
+const ListPage: React.FC = () => {
     const listsState = useSelector((state: RootState) => state.lists);
-    return (<BoardStyle>
-        <BoardListWrapper>
+    return (<ListStyle>
+        <ListWrapper>
             {listsState.lists.map((list: ListsType, index: number) =>
                 <Lists key={list.id} list={list} index={index} />)}
             <CreateLists />
-        </BoardListWrapper>
-    </BoardStyle>)
+        </ListWrapper>
+    </ListStyle>)
 }
 
-export default Board;
+export default ListPage;
 
 const DNDcontroller = ([prevRect, nextRect]: (ClientRect | null)[], currentRect: ClientRect): number => {
     let overlap = 0;

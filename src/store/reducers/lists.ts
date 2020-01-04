@@ -55,16 +55,13 @@ export default createReducer<ListsState, ListsActions>(initialState, {
         }),
     [UPDATE_LISTS_INDEX]: (state, action) => 
         produce(state, draft => {
-            const copyLists = [...state.lists];
-            const currentList = copyLists[action.payload.currentIndex];
-            const targetList = copyLists[action.payload.targetIndex];
-            draft.lists = draft.lists.map((list: ListsType, index:number) => {
-                if(index === action.payload.currentIndex){
-                    list = targetList;
-                }else if(index === action.payload.targetIndex){
-                    list = currentList;
-                }
-                return list;
-            })
+            const copyLists = state.lists.slice();
+            const currentIndex = action.payload.currentIndex;
+            const targetIndex = action.payload.targetIndex;
+            const currentList = copyLists[currentIndex];
+            const targetList = copyLists[targetIndex];
+            copyLists.splice(currentIndex, 1, targetList);
+            copyLists.splice(targetIndex, 1, currentList);
+            draft.lists = copyLists;
         })
 });

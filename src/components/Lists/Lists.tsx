@@ -15,6 +15,7 @@ const ListsWrapper = styled.div`
     display: inline-block;
     vertical-align: top;
     white-space: nowrap;
+    position: relative;
 `
 
 const ListsContent = styled.div`
@@ -32,6 +33,7 @@ const ListsStyle = styled.ul`
    list-style: none;
    margin: 0;
    padding: 0;
+   overflow-y:auto;
 `
 
 const ListHeader = styled.input`
@@ -60,74 +62,83 @@ const Lists: React.FC<{ list: ListsType, index: number }> = ({ list, index }) =>
     const divEl = React.useRef<HTMLDivElement>(null);
     const [[left, top], setCoords] = React.useState<number[]>([0, 0]);
     const [moving, setMoving] = React.useState(false);
-    const [size, setSize] = React.useState({ width: 0, height: 0 });
+    const [rect, setRect] = React.useState<ClientRect>({
+        bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0
+    });
     const [targetIndex, setTargetIndex] = React.useState<number | null>(null);
 
     useEffect(() => {
         if (divEl && divEl.current) {
-            const { width, height } = divEl.current.getBoundingClientRect();
-            setSize({ width, height })
+            const rect = divEl.current.getBoundingClientRect();
+            setRect(rect);
         }
     }, [divEl]);
 
     useEffect(() => {
-        if (moving && index !== targetIndex && targetIndex !== null) {
+        if (moving && targetIndex !== null) {
             dispatch(updateListsIndex(index, targetIndex));
-            setCoords([0,0])
-            console.log(left)
         }
     }, [dispatch, index, targetIndex, moving]);
 
-    return <ListsWrapper ref={divEl} style={{
-        position: 'relative',
-        top: `${top}px`,
-        left: `${left}px`,
-        cursor: moving ? 'grabbing' : 'pointer',
-        zIndex: moving ? 1000 : 1,
-    }}>
-        <ListsContent>
-            <ListHeaderWrapper
-                onMouseDown={(e: React.MouseEvent) => {
-                    // 이벤트 전파 막기
-                    e.stopPropagation();
-                    // 보조 버튼(오른쪽 버튼)
-                    // e.button === 0 => 마우스 왼쪽 클릭
-                    if (e.button !== 0) return;
-                    const offsetX = e.clientX;
-                    const offsetY = e.clientY;
-                    const onMouseMove = (event: MouseEvent) => {
-                        const dx = event.clientX - offsetX;
-                        const dy = event.clientY - offsetY;
-                        setCoords([left + dx, top + dy]);
-                        if (Math.abs(dx) > 0 || Math.abs(dy) > 0) setMoving(true);
-                        const moveIndex = Math.floor((event.clientX - event.clientX % size.width) / size.width);
-                        if (moveIndex !== index) {
-                            setTargetIndex(moveIndex);
-                        }
-                    };
-                    const onMouseUp = () => {
-                        setMoving(false);
-                        setCoords(prevState => [prevState[0] - (prevState[0] % size.width), 0]);
-                        window.removeEventListener('mousemove', onMouseMove);
-                        window.removeEventListener('mouseup', onMouseUp);
-                    };
-                    window.addEventListener('mousemove', onMouseMove);
-                    window.addEventListener('mouseup', onMouseUp);
-                }}>
-                <ListHeader type="text" defaultValue={list.title}
-                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                        const value = e.currentTarget.value;
-                        if (e.keyCode === 13 && value) {
-                            dispatch(updateListsTitle(list.id, e.currentTarget.value))
-                            e.currentTarget.blur();
-                        }
-                    }} />
-            </ListHeaderWrapper>
-            <ListsStyle>
-                {cards.map((card: CardType, i: number) => <ListCard key={i} card={card} />)}
-            </ListsStyle>
-            <CreateCard listId={list.id} />
-        </ListsContent>
+    useEffect(() => {
+        const onMouseMove = (event: MouseEvent) => {
+            if (moving) {
+                if (divEl && divEl.current) {
+                    const rect = divEl.current.getBoundingClientRect();
+                    setCoords([event.clientX - rect.left, event.clientY - rect.top]);
+                }
+                const moveIndex = Math.floor((event.clientX - event.clientX % rect.width) / rect.width);
+                setTargetIndex(moveIndex);
+            }
+        };
+        const onMouseUp = () => {
+            setMoving(false);
+            setCoords(prevState => [prevState[0] - (prevState[0] % rect.width), 0]);
+        }
+        window.addEventListener('mouseup', onMouseUp);
+        window.addEventListener('mousemove', onMouseMove);
+
+        return () => {
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+        }
+    }, [moving, rect])
+
+    return <ListsWrapper ref={divEl} style={{ border: '1px solid green' }}>
+        <div style={{
+            border: '1px solid blue',
+            height: '100%',
+            width: '272px',
+            top: `${top}px`,
+            left: `${left}px`,
+            cursor: moving ? 'grabbing' : 'pointer',
+            zIndex: moving ? 1000 : 1,
+            position: 'relative'
+        }}>
+            <ListsContent style={{
+                border: '1px solid red',
+                transform: moving ? 'rotate(10deg)' : 'rotate(0)',
+            }} onMouseDown={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                if (e.button !== 0) return;
+                setMoving(true);
+            }}>
+                <ListHeaderWrapper>
+                    <ListHeader type="text" defaultValue={list.title}
+                        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                            const value = e.currentTarget.value;
+                            if (e.keyCode === 13 && value) {
+                                dispatch(updateListsTitle(list.id, e.currentTarget.value))
+                                e.currentTarget.blur();
+                            }
+                        }} />
+                </ListHeaderWrapper>
+                <ListsStyle>
+                    {cards.map((card: CardType, i: number) => <ListCard key={i} card={card} />)}
+                    <CreateCard listId={list.id} />
+                </ListsStyle>
+            </ListsContent>
+        </div>
     </ListsWrapper>
 }
 

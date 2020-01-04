@@ -1,7 +1,7 @@
 import React from 'react';
 import { Switch, Route, useHistory, useLocation } from 'react-router-dom';
-import Home from 'pages/Home';
-import Board from 'pages/Board';
+import BoardPage from 'pages/BoardPage';
+import ListPage from 'pages/ListPage';
 import NotFound from 'pages/NotFound';
 import Header from 'components/Header';
 import styled from 'styled-components';
@@ -21,8 +21,8 @@ const App: React.FC = () => {
     <AppStyle>
       <Header />
       <Switch>
-        <Route exact path="/trello-clone" component={Home} />
-        <Route exact path="/board/:id" component={Board} />
+        <Route exact path="/trello-clone" component={BoardPage} />
+        <Route exact path="/board/:id" component={ListPage} />
         <Route component={NotFound} />
       </Switch>
     </AppStyle>

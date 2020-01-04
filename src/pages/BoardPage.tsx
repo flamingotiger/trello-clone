@@ -6,18 +6,18 @@ import { useSelector } from 'react-redux';
 import { BoardType } from 'store/reducers/board';
 import { RootState } from 'store/reducers';
 
-const HomeWrap = styled.section`
+const BoardWrap = styled.section`
     width: 100%;
     display: flex;
     flex-wrap: wrap;
 `
 
-const Home = () => {
+const BoardPage:React.FC = () => {
     const boardState = useSelector((state: RootState) => state.board);
-    return <HomeWrap>
+    return <BoardWrap>
         {boardState.boards.map((board: BoardType) => <BoardCard key={board.id} board={board}/>)}
         <CreateBoardCard />
-    </HomeWrap>
+    </BoardWrap>
 }
 
-export default Home;
+export default BoardPage;
