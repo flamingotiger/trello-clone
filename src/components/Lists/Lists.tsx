@@ -27,6 +27,21 @@ const ListsContent = styled.div`
     max-height: 100%;
     position: relative;
     white-space: normal;
+    ${(props: { moving: boolean }) => {
+        if (props.moving) {
+            return `
+            cursor:grabbing;
+            z-index:1000;
+            transform:rotate(10deg);
+            `
+        } else {
+            return `
+            cursor:pointer;
+            z-index:1;
+            transform:rotate(0deg);
+            `
+        }
+    }}
 `
 
 const ListsStyle = styled.ul`
@@ -52,6 +67,13 @@ const ListHeaderWrapper = styled.div`
     height: 40px;
     display: flex;
     align-items: center;
+`
+
+const ListMoveEvent = styled.div`
+    border: 1px solid blue;
+    height: 100%;
+    width: 272px;
+    position: relative;
 `
 
 const Lists: React.FC<{ list: ListsType, index: number }> = ({ list, index }) => {
@@ -86,6 +108,9 @@ const Lists: React.FC<{ list: ListsType, index: number }> = ({ list, index }) =>
                 if (divEl && divEl.current) {
                     const rect = divEl.current.getBoundingClientRect();
                     setCoords([event.clientX - rect.left, event.clientY - rect.top]);
+                    // const dx = event.clientX - rect.left;
+                    // const dy = event.clientY - rect.top;
+                    // setCoords(([left, top]) => [left + dx, top + dy]);
                 }
                 const moveIndex = Math.floor((event.clientX - event.clientX % rect.width) / rect.width);
                 setTargetIndex(moveIndex);
@@ -105,25 +130,17 @@ const Lists: React.FC<{ list: ListsType, index: number }> = ({ list, index }) =>
     }, [moving, rect])
 
     return <ListsWrapper ref={divEl} style={{ border: '1px solid green' }}>
-        <div style={{
-            border: '1px solid blue',
-            height: '100%',
-            width: '272px',
+        <ListMoveEvent style={{
             top: `${top}px`,
-            left: `${left}px`,
-            cursor: moving ? 'grabbing' : 'pointer',
-            zIndex: moving ? 1000 : 1,
-            position: 'relative'
+            left: `${left}px`
         }}>
-            <ListsContent style={{
-                border: '1px solid red',
-                transform: moving ? 'rotate(10deg)' : 'rotate(0)',
-            }} onMouseDown={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                if (e.button !== 0) return;
-                setMoving(true);
-            }}>
-                <ListHeaderWrapper>
+            <ListsContent moving={moving} style={{ border: '1px solid red' }}>
+                <ListHeaderWrapper onMouseDown={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    if (e.button !== 0) return;
+                    console.log(e.clientX)
+                    setMoving(true);
+                }}>
                     <ListHeader type="text" defaultValue={list.title}
                         onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                             const value = e.currentTarget.value;
@@ -138,7 +155,7 @@ const Lists: React.FC<{ list: ListsType, index: number }> = ({ list, index }) =>
                     <CreateCard listId={list.id} />
                 </ListsStyle>
             </ListsContent>
-        </div>
+        </ListMoveEvent>
     </ListsWrapper>
 }
 

@@ -39,18 +39,3 @@ const ListPage: React.FC = () => {
 }
 
 export default ListPage;
-
-const DNDcontroller = ([prevRect, nextRect]: (ClientRect | null)[], currentRect: ClientRect): number => {
-    let overlap = 0;
-    if (prevRect) {
-        if (prevRect.right < currentRect.left || prevRect.bottom < currentRect.top) {
-            overlap = -1;
-        }
-    }
-    if (nextRect) {
-        if (currentRect.right > nextRect.left || currentRect.bottom > nextRect.top) {
-            overlap = 1
-        }
-    }
-    return overlap;
-}
