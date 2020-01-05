@@ -98,22 +98,27 @@ const Lists: React.FC<{ list: ListsType, index: number }> = ({ list, index }) =>
 
     useEffect(() => {
         if (moving && targetIndex !== null) {
-            dispatch(updateListsIndex(index, targetIndex));
+            // dispatch(updateListsIndex(index, targetIndex));
+            // setCoords([0, 0])
         }
     }, [dispatch, index, targetIndex, moving]);
 
     useEffect(() => {
         const onMouseMove = (event: MouseEvent) => {
             if (moving) {
-                if (divEl && divEl.current) {
-                    const rect = divEl.current.getBoundingClientRect();
-                    setCoords([event.clientX - rect.left, event.clientY - rect.top]);
-                    // const dx = event.clientX - rect.left;
-                    // const dy = event.clientY - rect.top;
-                    // setCoords(([left, top]) => [left + dx, top + dy]);
-                }
-                const moveIndex = Math.floor((event.clientX - event.clientX % rect.width) / rect.width);
-                setTargetIndex(moveIndex);
+                setCoords(prevCoords => {
+                    const dx = prevCoords[0] + event.movementX;
+                    const dy = prevCoords[1] + event.movementY;
+                    console.log('left, top',[dx,dy])
+                    return [dx, dy]
+                });
+                // const moveIndex = index - ();
+                // console.log('moveIndex', moveIndex);
+
+                // console.log(event.pageX)
+                // const moveIndex = Math.floor((event.pageX - event.pageX % rect.width) / rect.width);
+                // console.log(moveIndex)
+                // setTargetIndex(moveIndex);
             }
         };
         const onMouseUp = () => {
@@ -138,7 +143,6 @@ const Lists: React.FC<{ list: ListsType, index: number }> = ({ list, index }) =>
                 <ListHeaderWrapper onMouseDown={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     if (e.button !== 0) return;
-                    console.log(e.clientX)
                     setMoving(true);
                 }}>
                     <ListHeader type="text" defaultValue={list.title}

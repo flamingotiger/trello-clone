@@ -15,7 +15,6 @@ const ListStyle = styled.section`
 const ListWrapper = styled.div`
     white-space: nowrap;
     user-select: none;
-    position: relative;
     margin-bottom: 8px;
     overflow-x: auto;
     overflow-y: hidden;
@@ -25,6 +24,7 @@ const ListWrapper = styled.div`
     right: 0;
     bottom: 0;
     left: 0;
+    border: 1px solid purple;
 `
 
 const ListPage: React.FC = () => {
