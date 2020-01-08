@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import ListCard from './ListCard';
 import { ListsType, updateListsTitle, updateListsIndex } from 'store/reducers/lists';
@@ -27,18 +27,19 @@ const ListsContent = styled.div`
     max-height: 100%;
     position: relative;
     white-space: normal;
+    width: 272px;
     ${(props: { moving: boolean }) => {
         if (props.moving) {
-            return `
-            cursor:grabbing;
-            z-index:1000;
-            transform:rotate(10deg);
+            return css`
+            cursor: grabbing;
+            z-index: 1000;
+            will-change: transform;
             `
         } else {
-            return `
-            cursor:pointer;
-            z-index:1;
-            transform:rotate(0deg);
+            return css`
+            cursor: pointer;
+            z-index: 10;
+            will-change: auto;
             `
         }
     }}
@@ -69,20 +70,16 @@ const ListHeaderWrapper = styled.div`
     align-items: center;
 `
 
-const ListMoveEvent = styled.div`
-    border: 1px solid blue;
-    height: 100%;
-    width: 272px;
-    position: relative;
-`
-
-const Lists: React.FC<{ list: ListsType, index: number }> = ({ list, index }) => {
+interface ListsProps { list: ListsType, index: number }
+const Lists: React.FC<ListsProps> = ({ list, index }) => {
     const dispatch = useDispatch();
     const cards = useSelector((state: RootState) =>
         state.card.cards.filter((card: CardType) => card.listsId === list.id)
     );
     const divEl = React.useRef<HTMLDivElement>(null);
     const [[left, top], setCoords] = React.useState<number[]>([0, 0]);
+    const [[offsetX, offsetY], setOffsets] = React.useState<number[]>([0, 0]);
+
     const [moving, setMoving] = React.useState(false);
     const [rect, setRect] = React.useState<ClientRect>({
         bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0
@@ -98,6 +95,7 @@ const Lists: React.FC<{ list: ListsType, index: number }> = ({ list, index }) =>
 
     useEffect(() => {
         if (moving && targetIndex !== null) {
+            // console.log(index, targetIndex);
             // dispatch(updateListsIndex(index, targetIndex));
             // setCoords([0, 0])
         }
@@ -109,22 +107,17 @@ const Lists: React.FC<{ list: ListsType, index: number }> = ({ list, index }) =>
                 setCoords(prevCoords => {
                     const dx = prevCoords[0] + event.movementX;
                     const dy = prevCoords[1] + event.movementY;
-                    console.log('left, top',[dx,dy])
                     return [dx, dy]
                 });
-                // const moveIndex = index - ();
-                // console.log('moveIndex', moveIndex);
-
-                // console.log(event.pageX)
-                // const moveIndex = Math.floor((event.pageX - event.pageX % rect.width) / rect.width);
-                // console.log(moveIndex)
-                // setTargetIndex(moveIndex);
+                console.log(offsetX % (rect.width + (offsetX / rect.width * 8)));
+                const moveValue = (offsetX - event.clientX) - left;
             }
         };
         const onMouseUp = () => {
             setMoving(false);
             setCoords(prevState => [prevState[0] - (prevState[0] % rect.width), 0]);
-        }
+        };
+
         window.addEventListener('mouseup', onMouseUp);
         window.addEventListener('mousemove', onMouseMove);
 
@@ -132,34 +125,30 @@ const Lists: React.FC<{ list: ListsType, index: number }> = ({ list, index }) =>
             window.removeEventListener('mousemove', onMouseMove);
             window.removeEventListener('mouseup', onMouseUp);
         }
-    }, [moving, rect])
+    }, [moving, rect, index, left, top])
 
     return <ListsWrapper ref={divEl} style={{ border: '1px solid green' }}>
-        <ListMoveEvent style={{
-            top: `${top}px`,
-            left: `${left}px`
-        }}>
-            <ListsContent moving={moving} style={{ border: '1px solid red' }}>
-                <ListHeaderWrapper onMouseDown={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    if (e.button !== 0) return;
-                    setMoving(true);
-                }}>
-                    <ListHeader type="text" defaultValue={list.title}
-                        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                            const value = e.currentTarget.value;
-                            if (e.keyCode === 13 && value) {
-                                dispatch(updateListsTitle(list.id, e.currentTarget.value))
-                                e.currentTarget.blur();
-                            }
-                        }} />
-                </ListHeaderWrapper>
-                <ListsStyle>
-                    {cards.map((card: CardType, i: number) => <ListCard key={i} card={card} />)}
-                    <CreateCard listId={list.id} />
-                </ListsStyle>
-            </ListsContent>
-        </ListMoveEvent>
+        <ListsContent moving={moving} style={{ transform: `translateX(${left}px) translateY(${top}px) rotate(${moving ? '10deg' : '0deg'})` }}>
+            <ListHeaderWrapper onMouseDown={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                if (e.button !== 0) return;
+                setOffsets([e.clientX, e.clientY]);
+                setMoving(true);
+            }}>
+                <ListHeader type="text" defaultValue={list.title}
+                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                        const value = e.currentTarget.value;
+                        if (e.keyCode === 13 && value) {
+                            dispatch(updateListsTitle(list.id, e.currentTarget.value))
+                            e.currentTarget.blur();
+                        }
+                    }} />
+            </ListHeaderWrapper>
+            <ListsStyle>
+                {cards.map((card: CardType, i: number) => <ListCard key={i} card={card} />)}
+                <CreateCard listId={list.id} />
+            </ListsStyle>
+        </ListsContent>
     </ListsWrapper>
 }
 
