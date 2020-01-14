@@ -30,28 +30,61 @@ const ListWrapper = styled.div`
 const ListPage: React.FC = () => {
     const listsState = useSelector((state: RootState) => state.lists);
     const wrapperRef = useRef<HTMLDivElement>(null);
-    const [targetIndex, setTargetIndex] = useState<number>(0);
+    const [targetIndex, setTargetIndex] = useState<number | undefined>(undefined);
+    const [[leftList, topList], setCoordList] = React.useState<number[]>([0, 0]);
+    const [moveIndex, setMoveIndex] = useState<number | undefined>(undefined);
+
+    const resetListPosition = () => {
+        setTargetIndex(undefined);
+        setCoordList(prevCoords => {
+            const [left, top] = prevCoords;
+            return [-left, top];
+        });
+    }
 
     useEffect(() => {
-        const onMove = (event: MouseEvent) => {
-            if (wrapperRef.current) {
-                const { scrollLeft, scrollWidth } = wrapperRef.current;
-                const { clientX } = event;
-                const listWidth = scrollWidth / (listsState.lists.length + 1);
-                const target = Math.floor((clientX + scrollLeft) / listWidth);
-                setTargetIndex(target);
+        const onMouseUp = () => {
+            setMoveIndex(undefined);
+            resetListPosition();
+        };
+
+        const onMouseMove = (event: MouseEvent) => {
+            if (moveIndex !== undefined) {
+                if (wrapperRef.current) {
+                    const { scrollLeft, scrollWidth } = wrapperRef.current;
+                    const { clientX } = event;
+                    const listWidth = scrollWidth / (listsState.lists.length + 1);
+                    const target = Math.floor((clientX + scrollLeft) / listWidth);
+                    setTargetIndex(target);
+                    setCoordList(prevCoords => {
+                        const [left, top] = prevCoords;
+                        const dx = left + event.movementX;
+                        const dy = top + event.movementY;
+                        return [dx, dy]
+                    });
+                }
             }
         }
-        document.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onMouseUp);
+        window.addEventListener('mousemove', onMouseMove);
         return () => {
-            document.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onMouseUp);
+            window.removeEventListener('mousemove', onMouseMove);
         }
-    }, [wrapperRef, listsState]);
+    }, [wrapperRef, listsState, moveIndex]);
 
     return (<ListStyle>
         <ListWrapper ref={wrapperRef}>
             {listsState.lists.map((list: ListsType, index: number) =>
-                <Lists key={list.id} list={list} index={index} targetIndex={targetIndex} />
+                <Lists key={list.id}
+                    list={list}
+                    index={index}
+                    targetIndex={targetIndex === undefined ? index : targetIndex}
+                    leftList={leftList}
+                    topList={topList}
+                    moveIndex={moveIndex}
+                    resetListPosition={() => resetListPosition()}
+                    setMoveIndex={(m: number) => setMoveIndex(m)} />
             )}
             <CreateLists />
         </ListWrapper>

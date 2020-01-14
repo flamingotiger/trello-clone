@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import styled, {css} from 'styled-components';
+import styled, { css } from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import ListCard from './ListCard';
 import { ListsType, updateListsTitle, updateListsIndex } from 'store/reducers/lists';
@@ -70,65 +70,40 @@ const ListHeaderWrapper = styled.div`
     align-items: center;
 `
 
-interface ListsProps { list: ListsType, index: number, targetIndex: number }
-const Lists: React.FC<ListsProps> = ({ list, index, targetIndex }) => {
+interface ListsProps {
+    list: ListsType;
+    index: number;
+    targetIndex: number;
+    leftList: number;
+    topList: number;
+    moveIndex: number | undefined;
+    setMoveIndex: (m: number) => void;
+    resetListPosition: () => void;
+}
 
+const Lists: React.FC<ListsProps> = ({ list, index, targetIndex, leftList, topList, moveIndex, setMoveIndex, resetListPosition }) => {
+    const moving = index === moveIndex;
     const dispatch = useDispatch();
     const cards = useSelector((state: RootState) =>
         state.card.cards.filter((card: CardType) => card.listsId === list.id)
     );
-    const divEl = React.useRef<HTMLDivElement>(null);
-    const [[left, top], setCoords] = React.useState<number[]>([0, 0]);
-
-    const [moving, setMoving] = React.useState(false);
-    const [rect, setRect] = React.useState<ClientRect>({
-        bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0
-    });
 
     useEffect(() => {
-        if (divEl && divEl.current) {
-            const rect = divEl.current.getBoundingClientRect();
-            setRect(rect);
+        if (moving && targetIndex !== moveIndex) {
+            if (moveIndex !== undefined) {
+                dispatch(updateListsIndex(moveIndex, targetIndex));
+                resetListPosition();
+                setMoveIndex(targetIndex);
+            }            
         }
-    }, [divEl]);
+    }, [dispatch, index, targetIndex, moving, moveIndex]);
 
-    useEffect(() => {
-        if (moving && index !== targetIndex) {
-            dispatch(updateListsIndex(index, targetIndex));
-            setCoords([0, 0])
-        }
-    }, [dispatch, index, targetIndex, moving]);
-
-    useEffect(() => {
-        const onMouseMove = (event: MouseEvent) => {
-            if (moving) {
-                setCoords(prevCoords => {
-                    const dx = prevCoords[0] + event.movementX;
-                    const dy = prevCoords[1] + event.movementY;
-                    return [dx, dy]
-                });
-            }
-        };
-        const onMouseUp = () => {
-            setMoving(false);
-            setCoords(prevState => [prevState[0] - (prevState[0] % rect.width), 0]);
-        };
-
-        window.addEventListener('mouseup', onMouseUp);
-        window.addEventListener('mousemove', onMouseMove);
-
-        return () => {
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
-        }
-    }, [moving, rect, index, left, top])
-
-    return <ListsWrapper ref={divEl} style={{ border: '1px solid green' }}>
-        <ListsContent moving={moving} style={{ transform: `translateX(${left}px) translateY(${top}px) rotate(${moving ? '10deg' : '0deg'})` }}>
+    return <ListsWrapper style={{ border: '1px solid green' }}>
+        <ListsContent moving={moving} style={moving ? { transform: `translateX(${leftList}px) translateY(${topList}px) rotate(10deg)` } : {}}>
             <ListHeaderWrapper onMouseDown={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 if (e.button !== 0) return;
-                setMoving(true);
+                setMoveIndex(index);
             }}>
                 <ListHeader type="text" defaultValue={list.title}
                     onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
