@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import Lists from 'components/Lists/Lists';
 import CreateLists from 'components/Lists/CreateLists';
@@ -29,10 +29,30 @@ const ListWrapper = styled.div`
 
 const ListPage: React.FC = () => {
     const listsState = useSelector((state: RootState) => state.lists);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const [targetIndex, setTargetIndex] = useState<number>(0);
+
+    useEffect(() => {
+        const onMove = (event: MouseEvent) => {
+            if (wrapperRef.current) {
+                const { scrollLeft, scrollWidth } = wrapperRef.current;
+                const { clientX } = event;
+                const listWidth = scrollWidth / (listsState.lists.length + 1);
+                const target = Math.floor((clientX + scrollLeft) / listWidth);
+                setTargetIndex(target);
+            }
+        }
+        document.addEventListener('mousemove', onMove);
+        return () => {
+            document.removeEventListener('mousemove', onMove);
+        }
+    }, [wrapperRef, listsState]);
+
     return (<ListStyle>
-        <ListWrapper>
+        <ListWrapper ref={wrapperRef}>
             {listsState.lists.map((list: ListsType, index: number) =>
-                <Lists key={list.id} list={list} index={index} />)}
+                <Lists key={list.id} list={list} index={index} targetIndex={targetIndex} />
+            )}
             <CreateLists />
         </ListWrapper>
     </ListStyle>)

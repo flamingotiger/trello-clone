@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import styled, { css } from 'styled-components';
+import styled, {css} from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import ListCard from './ListCard';
 import { ListsType, updateListsTitle, updateListsIndex } from 'store/reducers/lists';
@@ -70,21 +70,20 @@ const ListHeaderWrapper = styled.div`
     align-items: center;
 `
 
-interface ListsProps { list: ListsType, index: number }
-const Lists: React.FC<ListsProps> = ({ list, index }) => {
+interface ListsProps { list: ListsType, index: number, targetIndex: number }
+const Lists: React.FC<ListsProps> = ({ list, index, targetIndex }) => {
+
     const dispatch = useDispatch();
     const cards = useSelector((state: RootState) =>
         state.card.cards.filter((card: CardType) => card.listsId === list.id)
     );
     const divEl = React.useRef<HTMLDivElement>(null);
     const [[left, top], setCoords] = React.useState<number[]>([0, 0]);
-    const [[offsetX, offsetY], setOffsets] = React.useState<number[]>([0, 0]);
 
     const [moving, setMoving] = React.useState(false);
     const [rect, setRect] = React.useState<ClientRect>({
         bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0
     });
-    const [targetIndex, setTargetIndex] = React.useState<number | null>(null);
 
     useEffect(() => {
         if (divEl && divEl.current) {
@@ -94,10 +93,9 @@ const Lists: React.FC<ListsProps> = ({ list, index }) => {
     }, [divEl]);
 
     useEffect(() => {
-        if (moving && targetIndex !== null) {
-            // console.log(index, targetIndex);
-            // dispatch(updateListsIndex(index, targetIndex));
-            // setCoords([0, 0])
+        if (moving && index !== targetIndex) {
+            dispatch(updateListsIndex(index, targetIndex));
+            setCoords([0, 0])
         }
     }, [dispatch, index, targetIndex, moving]);
 
@@ -109,8 +107,6 @@ const Lists: React.FC<ListsProps> = ({ list, index }) => {
                     const dy = prevCoords[1] + event.movementY;
                     return [dx, dy]
                 });
-                console.log(offsetX % (rect.width + (offsetX / rect.width * 8)));
-                const moveValue = (offsetX - event.clientX) - left;
             }
         };
         const onMouseUp = () => {
@@ -132,7 +128,6 @@ const Lists: React.FC<ListsProps> = ({ list, index }) => {
             <ListHeaderWrapper onMouseDown={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 if (e.button !== 0) return;
-                setOffsets([e.clientX, e.clientY]);
                 setMoving(true);
             }}>
                 <ListHeader type="text" defaultValue={list.title}
