@@ -70,6 +70,16 @@ const ListHeaderWrapper = styled.div`
     align-items: center;
 `
 
+const ListsPlaceHolder = styled.div`
+    position: absolute;
+    left:0;
+    top:0;
+    height: 100px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 3px;
+    width: 100%;
+`
+
 interface ListsProps {
     list: ListsType;
     index: number;
@@ -87,19 +97,23 @@ const Lists: React.FC<ListsProps> = ({ list, index, targetIndex, leftList, topLi
     const cards = useSelector((state: RootState) =>
         state.card.cards.filter((card: CardType) => card.listsId === list.id)
     );
-
+    
     useEffect(() => {
         if (moving && targetIndex !== moveIndex) {
             if (moveIndex !== undefined) {
                 dispatch(updateListsIndex(moveIndex, targetIndex));
                 resetListPosition();
                 setMoveIndex(targetIndex);
-            }            
+            }
         }
-    }, [dispatch, index, targetIndex, moving, moveIndex]);
+    }, [dispatch, index, targetIndex, moving, moveIndex, resetListPosition, setMoveIndex]);
 
-    return <ListsWrapper style={{ border: '1px solid green' }}>
-        <ListsContent moving={moving} style={moving ? { transform: `translateX(${leftList}px) translateY(${topList}px) rotate(10deg)` } : {}}>
+    return <ListsWrapper>
+        {moving && <ListsPlaceHolder />}
+        <ListsContent moving={moving}
+            // style={moving ? { position: 'fixed', transform: `translateX(${leftList}px) translateY(${topList}px) rotate(10deg)` } : {}}
+            style={moving ? { position: 'fixed', left: `${leftList}px`, top: `${topList}px` } : {}}
+        >
             <ListHeaderWrapper onMouseDown={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 if (e.button !== 0) return;

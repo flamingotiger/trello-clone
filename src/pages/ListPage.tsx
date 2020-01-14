@@ -36,32 +36,29 @@ const ListPage: React.FC = () => {
 
     const resetListPosition = () => {
         setTargetIndex(undefined);
-        setCoordList(prevCoords => {
-            const [left, top] = prevCoords;
-            return [-left, top];
-        });
     }
 
     useEffect(() => {
         const onMouseUp = () => {
+            setTargetIndex(undefined);
             setMoveIndex(undefined);
-            resetListPosition();
+            setCoordList([0, 0]);
         };
 
         const onMouseMove = (event: MouseEvent) => {
+            const { clientX, clientY } = event;
             if (moveIndex !== undefined) {
                 if (wrapperRef.current) {
+                    const createlistLength = 1;
                     const { scrollLeft, scrollWidth } = wrapperRef.current;
-                    const { clientX } = event;
-                    const listWidth = scrollWidth / (listsState.lists.length + 1);
+                    const listWidth = scrollWidth / (listsState.lists.length + createlistLength);
                     const target = Math.floor((clientX + scrollLeft) / listWidth);
-                    setTargetIndex(target);
-                    setCoordList(prevCoords => {
-                        const [left, top] = prevCoords;
-                        const dx = left + event.movementX;
-                        const dy = top + event.movementY;
-                        return [dx, dy]
-                    });
+                    if (target === listsState.lists.length + createlistLength) {
+                        setTargetIndex(undefined);
+                    } else {
+                        setTargetIndex(target);
+                    }
+                    setCoordList([scrollLeft + clientX, clientY])
                 }
             }
         }
