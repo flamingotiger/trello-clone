@@ -10,6 +10,7 @@ const AppStyle = styled.div`
   display:flex;
   flex-direction: column;
   height: 100vh;
+  position: relative;
 `
 
 const App: React.FC = () => {
