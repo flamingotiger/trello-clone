@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, CSSProperties } from "react";
 import styled, { css } from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import ListCard from "./ListCard";
@@ -28,24 +28,8 @@ const ListsContent = styled.div`
   display: flex;
   flex-direction: column;
   max-height: 100%;
-  position: relative;
   white-space: normal;
   width: 272px;
-  ${(props: { isDragging: boolean }) => {
-    if (props.isDragging) {
-      return css`
-        cursor: grabbing;
-        z-index: 1000;
-        will-change: transform;
-      `;
-    } else {
-      return css`
-        cursor: pointer;
-        z-index: 10;
-        will-change: auto;
-      `;
-    }
-  }}
 `;
 
 const ListsStyle = styled.ul`
@@ -84,9 +68,10 @@ const ListsPlaceHolder = styled.div`
 interface ListsProps {
   list: ListsType;
   index: number;
+  wrapperRect: ClientRect & { scrollLeft: number };
 }
 
-const Lists: React.FC<ListsProps> = ({ list, index }) => {
+const Lists: React.FC<ListsProps> = ({ list, index, wrapperRect }) => {
   const dispatch = useDispatch();
   const cards = useSelector((state: RootState) =>
     state.card.cards.filter((card: CardType) => card.listsId === list.id)
@@ -119,7 +104,7 @@ const Lists: React.FC<ListsProps> = ({ list, index }) => {
       window.removeEventListener("mousemove", styleDragging);
       window.removeEventListener("mouseup", styleDropping);
     };
-  }, [isDragging]);
+  }, [isDragging, wrapperRect]);
 
   useEffect(() => {
     if (divEl.current) {
@@ -128,24 +113,28 @@ const Lists: React.FC<ListsProps> = ({ list, index }) => {
     }
   }, [divEl]);
 
+  const defaultPosition = rect.left - wrapperRect.scrollLeft;
+
+  const getDraggingStyle = (): CSSProperties => {
+    const style: CSSProperties = {
+      position: isDragging ? "fixed" : "relative",
+      left: isDragging ? `${defaultPosition}px` : 0,
+      transform: `translate(${x}px,${y}px)`,
+      cursor: isDragging ? "grabbing" : "pointer",
+      zIndex: isDragging ? 1000 : 10,
+      willChange: isDragging ? "transform" : "auto"
+    };
+    return style;
+  };
+
   return (
     <ListsWrapper ref={divEl}>
       {isDragging && (
         <ListsPlaceHolder
-          style={{
-            position: "fixed",
-            left: `${rect.left}px`
-          }}
+          style={{ position: "absolute", left: `${defaultPosition}px` }}
         />
       )}
-      <ListsContent
-        isDragging={isDragging}
-        style={{
-          position: isDragging ? "fixed" : "relative",
-          left: isDragging ? `${rect.left}px` : 0,
-          transform: `translate(${x}px,${y}px)`
-        }}
-      >
+      <ListsContent style={getDraggingStyle()}>
         <ListHeaderWrapper
           onMouseDown={(e: React.MouseEvent) => {
             e.stopPropagation();
