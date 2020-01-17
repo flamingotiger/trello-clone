@@ -28,24 +28,28 @@ const ListWrapper = styled.div`
 const ListPage: React.FC = () => {
   const listsState = useSelector((state: RootState) => state.lists);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const [wrapperRect, setWrapperRect] = React.useState<
-    ClientRect & { scrollLeft: number }
-  >({
+  const [wrapperRect, setWrapperRect] = React.useState<ClientRect>({
     bottom: 0,
     height: 0,
     left: 0,
     right: 0,
     top: 0,
-    width: 0,
-    scrollLeft: 0
+    width: 0
   });
+  const [scrollLeft, setScrollLeft] = useState<number>(0);
 
   useEffect(() => {
-    const handleScroll = (e: any) => {
+    if (wrapperRef.current) {
+      const wrapperRect = wrapperRef.current.getBoundingClientRect();
+      setWrapperRect(wrapperRect);
+    }
+  }, [wrapperRef]);
+
+  useEffect(() => {
+    const handleScroll = () => {
       if (wrapperRef.current) {
-        const wrapperRect = wrapperRef.current.getBoundingClientRect();
-        const scrollLeft = wrapperRef.current.scrollLeft;
-        setWrapperRect({ ...wrapperRect, scrollLeft });
+        const { scrollLeft } = wrapperRef.current;
+        setScrollLeft(scrollLeft);
       }
     };
     if (wrapperRef.current) {
@@ -67,6 +71,7 @@ const ListPage: React.FC = () => {
             list={list}
             index={index}
             wrapperRect={wrapperRect}
+            scrollLeft={scrollLeft}
           />
         ))}
         <CreateLists />

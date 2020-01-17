@@ -1,4 +1,4 @@
-import React, { useEffect, CSSProperties } from "react";
+import React, { useEffect, CSSProperties, useCallback, useState } from "react";
 import styled, { css } from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import ListCard from "./ListCard";
@@ -58,7 +58,7 @@ const ListHeaderWrapper = styled.div`
 `;
 
 const ListsPlaceHolder = styled.div`
-  height: 100px;
+  height: 87px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
   width: 272px;
@@ -68,18 +68,24 @@ const ListsPlaceHolder = styled.div`
 interface ListsProps {
   list: ListsType;
   index: number;
-  wrapperRect: ClientRect & { scrollLeft: number };
+  wrapperRect: ClientRect;
+  scrollLeft: number;
 }
 
-const Lists: React.FC<ListsProps> = ({ list, index, wrapperRect }) => {
+const Lists: React.FC<ListsProps> = ({
+  list,
+  index,
+  wrapperRect,
+  scrollLeft
+}) => {
   const dispatch = useDispatch();
   const cards = useSelector((state: RootState) =>
     state.card.cards.filter((card: CardType) => card.listsId === list.id)
   );
   const divEl = React.useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = React.useState<boolean>(false);
-  const [[x, y], setCoords] = React.useState<[number, number]>([0, 0]);
-  const [rect, setRect] = React.useState<ClientRect>({
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [[x, y], setCoords] = useState<[number, number]>([0, 0]);
+  const [rect, setRect] = useState<ClientRect>({
     bottom: 0,
     height: 0,
     left: 0,
@@ -87,22 +93,38 @@ const Lists: React.FC<ListsProps> = ({ list, index, wrapperRect }) => {
     top: 0,
     width: 0
   });
+  const [targetIndex, setTargetIndex] = useState<number>();
+
+  const getTargetIndex = (clientX: number) => {
+    const margin = (rect.left % rect.width) / (index * 2 + 1);
+    const widthAndMargin = 2 * margin + rect.width;
+    let targetIndex = index;
+    if (clientX + scrollLeft > index * widthAndMargin + widthAndMargin) {
+      targetIndex = index + 1;
+    } else if (clientX + scrollLeft < index * widthAndMargin) {
+      targetIndex = index - 1;
+    }
+    setTargetIndex(targetIndex);
+  };
 
   useEffect(() => {
-    const styleDragging = (e: MouseEvent) => {
+    const dragging = (e: MouseEvent) => {
       if (isDragging) {
-        setCoords(([x, y]) => [x + e.movementX, y + e.movementY]);
+        setCoords(([x, y]) => {
+          getTargetIndex(e.clientX);
+          return [x + e.movementX, y + e.movementY];
+        });
       }
     };
-    const styleDropping = () => {
+    const dropping = () => {
       setIsDragging(false);
       setCoords([0, 0]);
     };
-    window.addEventListener("mousemove", styleDragging);
-    window.addEventListener("mouseup", styleDropping);
+    window.addEventListener("mousemove", dragging);
+    window.addEventListener("mouseup", dropping);
     return () => {
-      window.removeEventListener("mousemove", styleDragging);
-      window.removeEventListener("mouseup", styleDropping);
+      window.removeEventListener("mousemove", dragging);
+      window.removeEventListener("mouseup", dropping);
     };
   }, [isDragging, wrapperRect]);
 
@@ -113,7 +135,7 @@ const Lists: React.FC<ListsProps> = ({ list, index, wrapperRect }) => {
     }
   }, [divEl]);
 
-  const defaultPosition = rect.left - wrapperRect.scrollLeft;
+  const defaultPosition = rect.left - scrollLeft;
 
   const getDraggingStyle = (): CSSProperties => {
     const style: CSSProperties = {
