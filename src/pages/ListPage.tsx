@@ -28,49 +28,7 @@ const ListWrapper = styled.div`
 const ListPage: React.FC = () => {
   const listsState = useSelector((state: RootState) => state.lists);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const [targetIndex, setTargetIndex] = useState<number | undefined>(undefined);
-  const [CoordList, setCoordList] = React.useState<[number, number]>([0, 0]);
-  const [moveIndex, setMoveIndex] = useState<number | undefined>(undefined);
-  const [moving, setMoving] = useState<boolean>(false);
-
-  const resetListPosition = () => {
-    setTargetIndex(undefined);
-  };
-
-
-  useEffect(() => {
-    const onMouseUp = () => {
-      setTargetIndex(undefined);
-      setMoveIndex(undefined);
-      setCoordList([0, 0]);
-    };
-
-    const onMouseMove = (event: MouseEvent) => {
-      const { clientX, clientY } = event;
-      if (moving) {
-        if (wrapperRef.current) {
-          const createlistLength = 1;
-          const { scrollLeft, scrollWidth } = wrapperRef.current;
-          const listWidth =
-            scrollWidth / (listsState.lists.length + createlistLength);
-          const target = Math.floor((clientX + scrollLeft) / listWidth);
-          if (target === listsState.lists.length + createlistLength) {
-            setTargetIndex(undefined);
-          } else {
-            setTargetIndex(target);
-          }
-          setCoordList([scrollLeft + clientX, clientY]);
-        }
-      }
-    };
-    window.addEventListener("mouseup", onMouseUp);
-    window.addEventListener("mousemove", onMouseMove);
-    return () => {
-      window.removeEventListener("mouseup", onMouseUp);
-      window.removeEventListener("mousemove", onMouseMove);
-    };
-  }, [wrapperRef, listsState, moveIndex]);
-
+  
   return (
     <ListStyle>
       <ListWrapper ref={wrapperRef}>
@@ -79,13 +37,6 @@ const ListPage: React.FC = () => {
             key={list.id}
             list={list}
             index={index}
-            targetIndex={targetIndex === undefined ? index : targetIndex}
-            CoordList={CoordList}
-            moveIndex={moveIndex}
-            moving={moving}
-            setMoving={() => setMoving(true)}
-            resetListPosition={() => resetListPosition()}
-            setMoveIndex={(m: number) => setMoveIndex(m)}
           />
         ))}
         <CreateLists />

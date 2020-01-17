@@ -31,8 +31,8 @@ const ListsContent = styled.div`
   position: relative;
   white-space: normal;
   width: 272px;
-  ${(props: { isMoveSource: boolean }) => {
-    if (props.isMoveSource) {
+  ${(props: { isDragging: boolean }) => {
+    if (props.isDragging) {
       return css`
         cursor: grabbing;
         z-index: 1000;
@@ -84,71 +84,73 @@ const ListsPlaceHolder = styled.div`
 interface ListsProps {
   list: ListsType;
   index: number;
-  targetIndex: number;
-  CoordList: [number, number];
-  moveIndex: number | undefined;
-  moving: boolean;
-  setMoving: () => void;
-  setMoveIndex: (m: number) => void;
-  resetListPosition: () => void;
 }
 
-const Lists: React.FC<ListsProps> = ({
-  list,
-  index,
-  targetIndex,
-  CoordList,
-  moveIndex,
-  setMoveIndex,
-  resetListPosition,
-  setMoving,
-  moving
-}) => {
-  const isMoveSource = index === moveIndex;
+const Lists: React.FC<ListsProps> = ({ list, index }) => {
   const dispatch = useDispatch();
   const cards = useSelector((state: RootState) =>
     state.card.cards.filter((card: CardType) => card.listsId === list.id)
   );
+  const divEl = React.useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = React.useState<boolean>(false);
+  const [[x, y], setCoords] = React.useState<[number, number]>([0, 0]);
+  const [rect, setRect] = React.useState<ClientRect>({
+    bottom: 0,
+    height: 0,
+    left: 0,
+    right: 0,
+    top: 0,
+    width: 0
+  });
 
   useEffect(() => {
-    if (isMoveSource && targetIndex !== moveIndex) {
-      if (moveIndex !== undefined) {
-        dispatch(updateListsIndex(moveIndex, targetIndex));
-        resetListPosition();
-        setMoveIndex(targetIndex);
+    const styleDragging = (e: MouseEvent) => {
+      if (isDragging) {
+        setCoords(([x, y]) => [x + e.movementX, y + e.movementY]);
       }
+    };
+    const styleDropping = () => {
+      setIsDragging(false);
+      setCoords([0, 0]);
+    };
+    window.addEventListener("mousemove", styleDragging);
+    window.addEventListener("mouseup", styleDropping);
+    return () => {
+      window.removeEventListener("mousemove", styleDragging);
+      window.removeEventListener("mouseup", styleDropping);
+    };
+  }, [isDragging]);
+
+  useEffect(() => {
+    if (divEl.current) {
+      const rect = divEl.current.getBoundingClientRect();
+      setRect(rect);
     }
-  }, [
-    dispatch,
-    index,
-    targetIndex,
-    isMoveSource,
-    moveIndex,
-    resetListPosition,
-    setMoveIndex
-  ]);
+  }, [divEl]);
 
   return (
-    <ListsWrapper>
-      {isMoveSource && <ListsPlaceHolder />}
+    <ListsWrapper ref={divEl}>
+      {isDragging && (
+        <ListsPlaceHolder
+          style={{
+            position: "fixed",
+            left: `${rect.left}px`
+          }}
+        />
+      )}
       <ListsContent
-        isMoveSource={isMoveSource}
-        style={
-          isMoveSource && moving
-            ? {
-                position: "absolute",
-                left:`${Math.abs(CoordList[0]) > 0 ? `${CoordList[0]}px` : 'auto'}`,
-                top:`${Math.abs(CoordList[1]) > 0 ? `${CoordList[1]}px` : 'auto'}`
-              }
-            : {}
-        }
+        isDragging={isDragging}
+        style={{
+          position: isDragging ? "fixed" : "relative",
+          left: isDragging ? `${rect.left}px` : 0,
+          transform: `translate(${x}px,${y}px)`
+        }}
       >
         <ListHeaderWrapper
           onMouseDown={(e: React.MouseEvent) => {
             e.stopPropagation();
             if (e.button !== 0) return;
-            setMoveIndex(index);
-            setMoving();
+            setIsDragging(true);
           }}
         >
           <ListHeader
