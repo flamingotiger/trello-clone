@@ -1,9 +1,11 @@
 import React from "react";
 import styled from "styled-components";
-import Lists from "components/Lists/Lists";
-import CreateLists from "components/Lists/CreateLists";
-import { useSelector } from "react-redux";
+import Column from "components/Lists/Column";
+import CreateColumn from "components/Lists/CreateColumn";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "store/reducers";
+import { DragDropContext } from "react-beautiful-dnd";
+import { updateColumnTaskIndex } from "store/reducers/column";
 
 const BoardStyle = styled.section`
   height: 100%;
@@ -27,23 +29,55 @@ const BoardListWrapper = styled.div`
 `;
 
 const Board = () => {
-  const [listsState, taskState] = useSelector((state: RootState) => [
-    state.columns,
-    state.tasks,
+  const dispatch = useDispatch();
+  const [columnState, taskState] = useSelector((state: RootState) => [
+    state.column,
+    state.task,
   ]);
+
+  const onDragEnd = (result: any) => {
+    const { destination, source, draggableId } = result;
+    if (!destination) {
+      return;
+    }
+    if (
+      destination.draggableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+    const column = columnState.columns[source.droppableId];
+    const newTaskIds = Array.from(column.taskIds);
+    newTaskIds.splice(source.index, 1);
+    newTaskIds.splice(destination.index, 0, draggableId);
+    const newColumn = {
+      ...column,
+      taskIds: newTaskIds,
+    };
+    dispatch(updateColumnTaskIndex(newColumn));
+  };
   return (
-    <BoardStyle>
-      <BoardListWrapper>
-        {listsState.columnOrder.map((columnId: string) => {
-          const column = listsState.columns[columnId];
-          const tasks = column.taskIds.map(
-            (taskId: string) => taskState.tasks[taskId]
-          );
-          return <Lists key={column.id} tasks={tasks} column={column} />;
-        })}
-        <CreateLists />
-      </BoardListWrapper>
-    </BoardStyle>
+    <DragDropContext onDragEnd={onDragEnd}>
+      <BoardStyle>
+        <BoardListWrapper>
+          {columnState.columnOrder.map((columnId: string, index: number) => {
+            const column = columnState.columns[columnId];
+            const tasks = column.taskIds.map(
+              (taskId: string) => taskState.tasks[taskId]
+            );
+            return (
+              <Column
+                key={column.id}
+                column={column}
+                tasks={tasks}
+                index={index}
+              />
+            );
+          })}
+          <CreateColumn />
+        </BoardListWrapper>
+      </BoardStyle>
+    </DragDropContext>
   );
 };
 

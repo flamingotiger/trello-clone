@@ -1,10 +1,11 @@
 import React from "react";
 import styled from "styled-components";
 import { useDispatch } from "react-redux";
-import ListCard from "./ListCard";
-import { updateListsTitle, ListsType } from "store/reducers/columns";
-import CreateCard from "./CreateCard";
-import { CardType } from "store/reducers/tasks";
+import Task from "./Task";
+import { updateColumnTitle, ColumnType } from "store/reducers/column";
+import CreateTask from "./CreateTask";
+import { TaskType } from "store/reducers/task";
+import { Droppable } from "react-beautiful-dnd";
 
 const ListsWrapper = styled.div`
   width: 272px;
@@ -45,8 +46,9 @@ const ListHeader = styled.input`
 `;
 
 interface ListsProps {
-  tasks: CardType[];
-  column: ListsType;
+  tasks: TaskType[];
+  column: ColumnType;
+  index: number;
 }
 const Lists: React.FC<ListsProps> = ({ tasks, column }) => {
   const dispatch = useDispatch();
@@ -59,17 +61,22 @@ const Lists: React.FC<ListsProps> = ({ tasks, column }) => {
           onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
             const value = e.currentTarget.value;
             if (e.keyCode === 13 && value) {
-              dispatch(updateListsTitle(column.id, e.currentTarget.value));
+              dispatch(updateColumnTitle(column.id, e.currentTarget.value));
               e.currentTarget.blur();
             }
           }}
         />
-        <ListsStyle>
-          {tasks.map((card: CardType, index: number) => (
-            <ListCard key={index} card={card} />
-          ))}
-        </ListsStyle>
-        <CreateCard listId={column.id} />
+        <Droppable droppableId={column.id} type="task">
+          {(provided) => (
+            <ListsStyle ref={provided.innerRef} {...provided.droppableProps}>
+              {tasks.map((task: TaskType, index: number) => (
+                <Task key={task.id} task={task} index={index} />
+              ))}
+              {provided.placeholder}
+            </ListsStyle>
+          )}
+        </Droppable>
+        <CreateTask listId={column.id} />
       </ListsContent>
     </ListsWrapper>
   );

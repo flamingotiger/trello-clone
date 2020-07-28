@@ -3,8 +3,8 @@ import styled from "styled-components";
 import { useDispatch } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { createCard } from "store/reducers/tasks";
-import { addListCard } from "store/reducers/columns";
+import { createTask } from "store/reducers/task";
+import { addColumnTask } from "store/reducers/column";
 import uuid from "uuid";
 
 const CreateCardWrapper = styled.div`
@@ -42,25 +42,25 @@ const Input = styled.input`
   border: none;
 `;
 
-const CreateCard: React.FC<{ listId: string }> = ({ listId }) => {
+const CreateTask: React.FC<{ listId: string }> = ({ listId }) => {
   const dispatch = useDispatch();
-  const [cardName, setCardName] = useState("");
+  const [taskName, setTaskName] = useState("");
   const create = () => {
     const taskId: string = uuid.v4();
-    dispatch(createCard(taskId, cardName));
-    dispatch(addListCard(listId, taskId, cardName));
-    setCardName("");
+    dispatch(createTask(taskId, taskName));
+    dispatch(addColumnTask(listId, taskId, taskName));
+    setTaskName("");
   };
   return (
     <CreateCardWrapper>
       <Input
-        placeholder="Add create card"
+        placeholder="Add create task"
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setCardName(e.target.value)
+          setTaskName(e.target.value)
         }
-        value={cardName}
+        value={taskName}
         onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-          if (e.keyCode === 13 && cardName) {
+          if (e.keyCode === 13 && taskName) {
             create();
           }
         }}
@@ -77,4 +77,4 @@ const CreateCard: React.FC<{ listId: string }> = ({ listId }) => {
   );
 };
 
-export default CreateCard;
+export default CreateTask;
