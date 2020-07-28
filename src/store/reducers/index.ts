@@ -1,9 +1,9 @@
 import { combineReducers } from "redux";
 import board from './board';
-import lists from './lists';
-import card from './card';
+import columns from './columns';
+import tasks from './tasks';
 
-const rootReducer = combineReducers({ board, lists, card });
+const rootReducer = combineReducers({ board, columns, tasks });
 
 export type RootState = ReturnType<typeof rootReducer>
 export default rootReducer;

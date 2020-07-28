@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useDispatch } from 'react-redux';
-import { createLists } from 'store/reducers/lists';
+import { createLists } from 'store/reducers/columns';
 import { useParams } from 'react-router-dom';
 
 const ListsWrapper = styled.div`

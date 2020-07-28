@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useDispatch } from 'react-redux';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
-import { CardType, updateCard } from "store/reducers/card";
+import { CardType, updateCard } from "store/reducers/tasks";
 
 const ListCardStyle = styled.li`
     list-style: none;
