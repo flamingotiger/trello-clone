@@ -6,6 +6,7 @@ export const ADD_COLUMN_TASK = "ADD_COLUMN_TASK";
 export const CREATE_COLUMN = "CREATE_COLUMN";
 export const UPDATE_COLUMN_TITLE = "UPDATE_COLUMN_TITLE";
 export const UPDATE_COLUMN_TASK_INDEX = "UPDATE_COLUMN_TASK_INDEX";
+export const UPDATE_OTHER_COLUMN_TASK_INDEX = "UPDATE_OTHER_COLUMN_TASK_INDEX";
 
 export const addColumnTask = (id: string, taskId: string, title: string) => {
   return action(ADD_COLUMN_TASK, { id, taskId, title });
@@ -13,6 +14,13 @@ export const addColumnTask = (id: string, taskId: string, title: string) => {
 
 export const updateColumnTaskIndex = (newColumn: ColumnType) => {
   return action(UPDATE_COLUMN_TASK_INDEX, { newColumn });
+};
+
+export const updataOtherColumnTaskIndex = (
+  newStart: ColumnType,
+  newFinish: ColumnType
+) => {
+  return action(UPDATE_OTHER_COLUMN_TASK_INDEX, { newStart, newFinish });
 };
 
 export const createColumn = (title: string, boardId: string) => {
@@ -27,7 +35,8 @@ const actions = {
   addColumnTask,
   createColumn,
   updateColumnTitle,
-  updateColumnTaskIndex
+  updateColumnTaskIndex,
+  updataOtherColumnTaskIndex,
 };
 
 export { actions };
@@ -88,5 +97,14 @@ export default createReducer<ColumnState, ColumnActions>(initialState, {
         ...state.columns,
         [newColumn.id]: newColumn,
       };
+    }),
+  [UPDATE_OTHER_COLUMN_TASK_INDEX]: (state, action) =>
+    produce(state, (draft) => {
+      const { newStart, newFinish } = action.payload;
+      draft.columns = {
+        ...state.columns,
+        [newStart.id]: newStart,
+        [newFinish.id]: newFinish,
+      }
     }),
 });

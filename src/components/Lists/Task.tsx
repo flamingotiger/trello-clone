@@ -73,7 +73,7 @@ const Task: React.FC<TaskProps> = ({ task, index }) => {
   const dispatch = useDispatch();
   return (
     <Draggable draggableId={task.id} index={index}>
-      {(provided) => (
+      {(provided, snapshot) => (
         <ListCardStyle
           ref={provided.innerRef}
           {...provided.draggableProps}

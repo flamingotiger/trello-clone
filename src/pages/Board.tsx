@@ -5,11 +5,26 @@ import CreateColumn from "components/Lists/CreateColumn";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "store/reducers";
 import { DragDropContext } from "react-beautiful-dnd";
-import { updateColumnTaskIndex } from "store/reducers/column";
+import {
+  updateColumnTaskIndex,
+  updataOtherColumnTaskIndex,
+} from "store/reducers/column";
 
+const Utils = styled.div`
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  box-sizing: border-box;
+
+  h2 {
+    font-size: 18px;
+    font-weight: bold;
+  }
+`;
 const BoardStyle = styled.section`
   height: 100%;
-  overflow-y: auto;
   position: relative;
 `;
 
@@ -46,18 +61,45 @@ const Board = () => {
     ) {
       return;
     }
-    const column = columnState.columns[source.droppableId];
-    const newTaskIds = Array.from(column.taskIds);
-    newTaskIds.splice(source.index, 1);
-    newTaskIds.splice(destination.index, 0, draggableId);
-    const newColumn = {
-      ...column,
-      taskIds: newTaskIds,
+    const start = columnState.columns[source.droppableId];
+    const finish = columnState.columns[destination.droppableId];
+
+    // 드래그 시작하는 부분과 끝나는 부분이 같은 칼럼일때
+    if (start === finish) {
+      const newTaskIds = Array.from(start.taskIds);
+      newTaskIds.splice(source.index, 1);
+      newTaskIds.splice(destination.index, 0, draggableId);
+      const newColumn = {
+        ...start,
+        taskIds: newTaskIds,
+      };
+      dispatch(updateColumnTaskIndex(newColumn));
+      return;
+    }
+
+    // 다른 칼럼으로 이동할시
+    const startTaskIds = Array.from(start.taskIds);
+    startTaskIds.splice(source.index, 1);
+
+    const newStart = {
+      ...start,
+      taskIds: startTaskIds,
     };
-    dispatch(updateColumnTaskIndex(newColumn));
+
+    const finishTaskIds = Array.from(finish.taskIds);
+    finishTaskIds.splice(destination.index, 0, draggableId);
+
+    const newFinish = {
+      ...finish,
+      taskIds: finishTaskIds,
+    };
+    dispatch(updataOtherColumnTaskIndex(newStart, newFinish));
   };
   return (
     <DragDropContext onDragEnd={onDragEnd}>
+      <Utils>
+        <h2>유틸즈</h2>
+      </Utils>
       <BoardStyle>
         <BoardListWrapper>
           {columnState.columnOrder.map((columnId: string, index: number) => {
