@@ -8,8 +8,8 @@ export const createTask = (id: string, taskName: string) => {
   return action(CREATE_TASK, { id, taskName });
 };
 
-export const updateTask = (cardId: string, taskName: string) =>
-  action(UPDATE_TASK, { cardId, taskName });
+export const updateTask = (taskId: string, taskName: string) =>
+  action(UPDATE_TASK, { taskId, taskName });
 
 const actions = {
   createTask,
@@ -47,12 +47,13 @@ export default createReducer<TaskState, TaskActions>(initialState, {
     }),
   [UPDATE_TASK]: (state, action) =>
     produce(state, (draft) => {
-      draft.tasks = state.tasks;
-      // draft.tasks = state.tasks.map((card: CardType) => {
-      //   if (card.id === action.payload.cardId) {
-      //     card = { ...card, cardName: action.payload.cardName };
-      //   }
-      //   return card;
-      // });
-    })
+      const { taskId, taskName } = action.payload;
+      draft.tasks = {
+        ...state.tasks,
+        [taskId]: {
+          ...state.tasks[taskId],
+          taskName,
+        },
+      };
+    }),
 });

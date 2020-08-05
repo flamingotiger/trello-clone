@@ -1,28 +1,16 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import styled from "styled-components";
+import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { TaskType, updateTask } from "store/reducers/task";
 import { Draggable } from "react-beautiful-dnd";
 
-const ListCardStyle = styled.li`
-  list-style: none;
-  flex: 1 1 auto;
-  margin-bottom: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  margin: 0 4px;
-  padding: 0 4px;
-  z-index: 1;
-  min-height: 0;
-`;
-
 const Icon = styled.div`
   position: absolute;
   right: 10px;
-  top: 50%;
-  margin-top: -10px;
+  margin-top: 8px;
   width: 20px;
   height: 20px;
   border-radius: 4px;
@@ -34,21 +22,19 @@ const Icon = styled.div`
   }
 `;
 
-const ListCardContent = styled.div`
+const Container = styled.div`
+  display: flex;
+  margin-right: 8px;
+  margin-left: 8px;
+  margin-bottom: 8px;
+  z-index: 0;
+  min-height: 36px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 0 rgba(9, 30, 66, 0.25);
   background-color: #fff;
   border-radius: 3px;
-  box-shadow: 0 1px 0 rgba(9, 30, 66, 0.25);
   cursor: pointer;
-  display: block;
-  margin-bottom: 8px;
-  max-width: 300px;
-  min-height: 20px;
   position: relative;
-  text-decoration: none;
-  z-index: 0;
-  padding: 8px;
-  box-sizing: border-box;
-
   &:hover {
     background: rgba(0, 0, 0, 0.02);
     ${Icon} {
@@ -57,11 +43,44 @@ const ListCardContent = styled.div`
   }
 `;
 
-const ListCardInput = styled.input`
+const TaskName = styled.div`
+  flex: 1;
+  padding: 8px;
+  min-height: 36px;
+  font-size: 14px;
+  box-sizing: border-box;
+`;
+
+const Dim = styled.div`
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.2);
+  top: 0;
+  left: 0;
+  z-index: 9998;
+`;
+
+const TextContainer = styled.div`
+  position: absolute;
+  top: ${(props: { dimension: { top: number; left: number } }) =>
+    props.dimension.top}px;
+  left: ${(props: { dimension: { top: number; left: number } }) =>
+    props.dimension.left}px;
+`;
+
+const Textarea = styled.textarea`
+  width: 256px;
+  min-height: 20px;
   border: none;
   background: none;
   font-size: 14px;
   outline: none;
+  resize: none;
+  background-color: white;
+  border-radius: 3px;
+  margin: 0;
+  padding: 0;
 `;
 
 interface TaskProps {
@@ -69,41 +88,73 @@ interface TaskProps {
   index: number;
 }
 const Task: React.FC<TaskProps> = ({ task, index }) => {
-  const inputEl = useRef<HTMLInputElement>(null);
+  const [dimension, setDimension] = useState({ left: 0, top: 0 });
+  const [value, setValue] = useState<string>(task.taskName);
+  const location = useLocation();
+  const history = useHistory();
+  const textareaEl = useRef<HTMLTextAreaElement>(null);
+  const taskEl = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
+  const [inputDisabled, setInputDisabled] = useState(true);
+
+  useEffect(() => {
+    if (taskEl && taskEl.current) {
+      const { left, top } = taskEl.current.getBoundingClientRect();
+      setDimension({ left, top });
+    }
+  }, [index]);
+
   return (
-    <Draggable draggableId={task.id} index={index}>
-      {(provided, snapshot) => (
-        <ListCardStyle
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-        >
-          <ListCardContent>
-            <ListCardInput
-              ref={inputEl}
-              defaultValue={task.taskName}
-              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                const value = e.currentTarget.value;
-                if (e.keyCode === 13 && value) {
-                  dispatch(updateTask(task.id, e.currentTarget.value));
-                  e.currentTarget.blur();
-                }
-              }}
-            />
+    <>
+      <Draggable draggableId={task.id} index={index}>
+        {(provided, snapshot) => (
+          <Container
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+          >
+            <TaskName
+              ref={taskEl}
+              onClick={() => history.replace(`${location.pathname}/${task.id}`)}
+            >
+              {task.taskName}
+            </TaskName>
+
             <Icon
               onClick={() => {
-                if (inputEl && inputEl.current) {
-                  inputEl.current.focus();
+                setInputDisabled(false);
+                if (textareaEl && textareaEl.current) {
+                  textareaEl.current.focus();
                 }
               }}
             >
               <FontAwesomeIcon icon={faPen} size="sm" color="rgba(0,0,0,0.5)" />
             </Icon>
-          </ListCardContent>
-        </ListCardStyle>
+          </Container>
+        )}
+      </Draggable>
+      {!inputDisabled && (
+        <Dim>
+          <TextContainer dimension={dimension}>
+            <Textarea
+              ref={textareaEl}
+              defaultValue={value}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setValue(e.target.value)
+              }
+            />
+            <button
+              onClick={() => {
+                dispatch(updateTask(task.id, value));
+                setInputDisabled(true);
+              }}
+            >
+              Save
+            </button>
+          </TextContainer>
+        </Dim>
       )}
-    </Draggable>
+    </>
   );
 };
 

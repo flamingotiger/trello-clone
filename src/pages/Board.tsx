@@ -9,6 +9,8 @@ import {
   updateColumnTaskIndex,
   updataOtherColumnTaskIndex,
 } from "store/reducers/column";
+import { useLocation } from "react-router-dom";
+import DetailPopup from "components/DetailPopup/DetailPopup";
 
 const Utils = styled.div`
   width: 100%;
@@ -44,11 +46,13 @@ const BoardListWrapper = styled.div`
 `;
 
 const Board = () => {
+  const location = useLocation();
   const dispatch = useDispatch();
   const [columnState, taskState] = useSelector((state: RootState) => [
     state.column,
     state.task,
   ]);
+  const [, , , taskId] = location.pathname.split("/");
 
   const onDragEnd = (result: any) => {
     const { destination, source, draggableId } = result;
@@ -97,6 +101,7 @@ const Board = () => {
   };
   return (
     <DragDropContext onDragEnd={onDragEnd}>
+      {taskId && <DetailPopup taskId={taskId} />}
       <Utils>
         <h2>유틸즈</h2>
       </Utils>

@@ -22,7 +22,7 @@ const App: React.FC = () => {
       <Header />
       <Switch>
         <Route exact path="/trello-clone" component={Home} />
-        <Route exact path="/board/:id" component={Board} />
+        <Route path="/board/:id" component={Board} />
         <Route component={NotFound} />
       </Switch>
     </AppStyle>
