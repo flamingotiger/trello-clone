@@ -20,7 +20,6 @@ const Container = styled.div`
   border-radius: 10px;
   padding: 20px;
   overflow-y: auto;
-  border: 1px solid red;
 `;
 const Title = styled.textarea`
   height: ${(props: { textareaHeight: string }) => props.textareaHeight};
