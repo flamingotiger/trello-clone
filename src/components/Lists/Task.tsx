@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,6 +9,7 @@ import { Draggable } from "react-beautiful-dnd";
 
 const Icon = styled.div`
   position: absolute;
+  z-index: 100;
   right: 10px;
   margin-top: 8px;
   width: 20px;
@@ -22,7 +23,7 @@ const Icon = styled.div`
   }
 `;
 
-const Container = styled.div`
+const Container = styled.li`
   display: flex;
   margin-right: 8px;
   margin-left: 8px;
@@ -43,19 +44,23 @@ const Container = styled.div`
   }
 `;
 
-const TaskName = styled.div`
-  flex: 1;
+const TaskName = styled.span`
+  display: block;
+  width: 100%;
   padding: 8px;
+  margin: 0;
   min-height: 36px;
   font-size: 14px;
   box-sizing: border-box;
+  word-break: break-word;
+  line-height: 18px;
 `;
 
 const Dim = styled.div`
   width: 100%;
   height: 100%;
   position: fixed;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.6);
   top: 0;
   left: 0;
   z-index: 9998;
@@ -68,10 +73,43 @@ const TextContainer = styled.div`
   left: ${(props: { dimension: { top: number; left: number } }) =>
     props.dimension.left}px;
 `;
+const Buttons = styled.div`
+  display: flex;
+  margin-top: 10px;
+`;
+const Button = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow: 0 0px 5px rgba(0, 0, 0, 0.3);
+`;
+
+const CloseButton = styled.button`
+  ${Button};
+  background-color: #e61e3f;
+  &:hover {
+    background-color: #ff3d5d;
+  }
+`;
+const SaveButton = styled.button`
+  ${Button};
+  margin-right: 10px;
+  background-color: #026aa7;
+  &:hover {
+    background-color: #0081cc;
+  }
+`;
 
 const Textarea = styled.textarea`
+  min-height: 100px;
   width: 256px;
-  min-height: 20px;
   border: none;
   background: none;
   font-size: 14px;
@@ -80,7 +118,9 @@ const Textarea = styled.textarea`
   background-color: white;
   border-radius: 3px;
   margin: 0;
-  padding: 0;
+  padding: 10px;
+  box-sizing: border-box;
+  box-shadow: 0 0px 10px rgba(0, 0, 0, 0.3);
 `;
 
 interface TaskProps {
@@ -103,11 +143,10 @@ const Task: React.FC<TaskProps> = ({ task, index }) => {
       setDimension({ left, top });
     }
   }, [index]);
-
   return (
     <>
       <Draggable draggableId={task.id} index={index}>
-        {(provided, snapshot) => (
+        {(provided) => (
           <Container
             ref={provided.innerRef}
             {...provided.draggableProps}
@@ -143,14 +182,19 @@ const Task: React.FC<TaskProps> = ({ task, index }) => {
                 setValue(e.target.value)
               }
             />
-            <button
-              onClick={() => {
-                dispatch(updateTask(task.id, value));
-                setInputDisabled(true);
-              }}
-            >
-              Save
-            </button>
+            <Buttons>
+              <SaveButton
+                onClick={() => {
+                  dispatch(updateTask(task.id, value));
+                  setInputDisabled(true);
+                }}
+              >
+                Save
+              </SaveButton>
+              <CloseButton onClick={() => setInputDisabled(true)}>
+                Close
+              </CloseButton>
+            </Buttons>
           </TextContainer>
         </Dim>
       )}

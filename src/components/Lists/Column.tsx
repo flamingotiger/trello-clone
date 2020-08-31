@@ -93,16 +93,19 @@ const Column: React.FC<ListsProps> = ({ tasks, column }) => {
           />
         </ColumnHeaderContainer>
         <Droppable droppableId={column.id} type="task">
-          {(provided) => (
-            <ListsStyle ref={provided.innerRef} {...provided.droppableProps}>
+          {provided => (
+            <ListsStyle
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+            >
               {tasks.map((task: TaskType, index: number) => (
                 <Task key={task.id} task={task} index={index} />
               ))}
               {provided.placeholder}
+              <CreateTask listId={column.id} />
             </ListsStyle>
           )}
         </Droppable>
-        <CreateTask listId={column.id} />
       </ListsContent>
     </ListsWrapper>
   );
