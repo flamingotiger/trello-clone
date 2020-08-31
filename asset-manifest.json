@@ -1,22 +1,22 @@
 {
   "files": {
-    "main.css": "/trello-clone/static/css/main.8f738075.chunk.css",
-    "main.js": "/trello-clone/static/js/main.3eeddec2.chunk.js",
-    "main.js.map": "/trello-clone/static/js/main.3eeddec2.chunk.js.map",
+    "main.css": "/trello-clone/static/css/main.1e1101a2.chunk.css",
+    "main.js": "/trello-clone/static/js/main.e876c192.chunk.js",
+    "main.js.map": "/trello-clone/static/js/main.e876c192.chunk.js.map",
     "runtime-main.js": "/trello-clone/static/js/runtime-main.e2fc9f5b.js",
     "runtime-main.js.map": "/trello-clone/static/js/runtime-main.e2fc9f5b.js.map",
-    "static/js/2.33ba6c14.chunk.js": "/trello-clone/static/js/2.33ba6c14.chunk.js",
-    "static/js/2.33ba6c14.chunk.js.map": "/trello-clone/static/js/2.33ba6c14.chunk.js.map",
+    "static/js/2.87308ae7.chunk.js": "/trello-clone/static/js/2.87308ae7.chunk.js",
+    "static/js/2.87308ae7.chunk.js.map": "/trello-clone/static/js/2.87308ae7.chunk.js.map",
     "index.html": "/trello-clone/index.html",
-    "precache-manifest.649b3ae0f0df5ec723b037e82f024464.js": "/trello-clone/precache-manifest.649b3ae0f0df5ec723b037e82f024464.js",
+    "precache-manifest.72a09f7958ab8fa136331bfa2ad0a6d2.js": "/trello-clone/precache-manifest.72a09f7958ab8fa136331bfa2ad0a6d2.js",
     "service-worker.js": "/trello-clone/service-worker.js",
-    "static/css/main.8f738075.chunk.css.map": "/trello-clone/static/css/main.8f738075.chunk.css.map",
-    "static/js/2.33ba6c14.chunk.js.LICENSE": "/trello-clone/static/js/2.33ba6c14.chunk.js.LICENSE"
+    "static/css/main.1e1101a2.chunk.css.map": "/trello-clone/static/css/main.1e1101a2.chunk.css.map",
+    "static/js/2.87308ae7.chunk.js.LICENSE": "/trello-clone/static/js/2.87308ae7.chunk.js.LICENSE"
   },
   "entrypoints": [
     "static/js/runtime-main.e2fc9f5b.js",
-    "static/js/2.33ba6c14.chunk.js",
-    "static/css/main.8f738075.chunk.css",
-    "static/js/main.3eeddec2.chunk.js"
+    "static/js/2.87308ae7.chunk.js",
+    "static/css/main.1e1101a2.chunk.css",
+    "static/js/main.e876c192.chunk.js"
   ]
 }
